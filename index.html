@@ -31,6 +31,49 @@ footer{border-top:1px solid #ffffff12;padding:18px 0;color:#8f899f;font-size:10p
 @media(max-width:760px){.navlinks{gap:12px;font-size:10px}.hero{min-height:530px;padding:70px 0}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.skills-grid{grid-template-columns:1fr 1fr}.jobtop{display:block}.date{display:block;margin-top:3px}.metrics{gap:20px}}
 @media(max-width:520px){.wrap{width:calc(100% - 30px)}nav{height:auto;min-height:62px;align-items:flex-start;flex-direction:column;justify-content:center;padding:10px 0;gap:5px}.navlinks{width:100%;overflow-x:auto;padding-bottom:3px;white-space:nowrap}.hero{min-height:490px;padding:60px 0}.grid,.skills-grid,.lower-grid,.awards{grid-template-columns:1fr}.metrics{gap:15px}.metric{min-width:82px}.section-head h2{font-size:20px}.card{padding:17px}section{padding:47px 0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}*{transition:none!important}}
+
+
+/* Animated background effect */
+body:before {
+  inset: -24%;
+  background-size: 140% 140%;
+  animation: ambientDrift 24s ease-in-out infinite alternate;
+  will-change: transform, background-position;
+}
+
+@keyframes ambientDrift {
+  0% {
+    transform: translate(-2%, -1%) scale(1);
+    background-position: 0% 20%;
+  }
+  50% {
+    transform: translate(2%, 1%) scale(1.05);
+    background-position: 50% 70%;
+  }
+  100% {
+    transform: translate(-1%, 2%) scale(1.02);
+    background-position: 100% 30%;
+  }
+}
+
+body:after {
+  animation: starDrift 42s linear infinite;
+}
+
+@keyframes starDrift {
+  from { background-position: 0 0; }
+  to { background-position: 430px 360px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:before,
+  body:after {
+    animation: none;
+  }
+}
+
+
+  
 </style>
 </head>
 <body>
