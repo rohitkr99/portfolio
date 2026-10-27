@@ -73,6 +73,20 @@ body:after {
 }
 
 
+#constellation-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+header, main, footer {
+  position: relative;
+  z-index: 1;
+}
+
   
 </style>
 </head>
@@ -109,4 +123,109 @@ document.getElementById('year').textContent=new Date().getFullYear();
 const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 </script>
+<canvas id="constellation-canvas" aria-hidden="true"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById("constellation-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  const mouse = { x: -1000, y: -1000 };
+  let w, h, stars = [];
+  const linkDistance = 125;
+  const mouseDistance = 180;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const count = Math.min(120, Math.max(45, Math.floor(w * h / 10000)));
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.45,
+      vy: (Math.random() - 0.5) * 0.45,
+      r: Math.random() * 1.3 + 0.7
+    }));
+  }
+
+  window.addEventListener("resize", resize);
+  window.addEventListener("pointermove", e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive: true });
+
+  window.addEventListener("pointerleave", () => {
+    mouse.x = mouse.y = -1000;
+  });
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+
+    for (const s of stars) {
+      s.x += s.vx;
+      s.y += s.vy;
+
+      if (s.x < 0 || s.x > w) s.vx *= -1;
+      if (s.y < 0 || s.y > h) s.vy *= -1;
+      s.x = Math.max(0, Math.min(w, s.x));
+      s.y = Math.max(0, Math.min(h, s.y));
+    }
+
+    // Connect nearby stars to create constellations.
+    for (let i = 0; i < stars.length; i++) {
+      for (let j = i + 1; j < stars.length; j++) {
+        const a = stars[i], b = stars[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+
+        if (d < linkDistance) {
+          const alpha = (1 - d / linkDistance) * 0.3;
+          ctx.strokeStyle = `rgba(185, 153, 255, ${alpha})`;
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+
+      // Nearby stars connect to the cursor in teal.
+      const d = Math.hypot(safeX(stars[i]) - mouse.x,
+                           safeY(stars[i]) - mouse.y);
+      if (d < mouseDistance) {
+        const s = stars[i];
+        const alpha = (1 - d / mouseDistance) * 0.75;
+        ctx.strokeStyle = `rgba(84, 229, 194, ${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.stroke();
+      }
+    }
+
+    // Draw the glowing star points.
+    for (const s of stars) {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(235, 225, 255, 0.9)";
+      ctx.fill();
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  function safeX(s) { return s.x; }
+  function safeY(s) { return s.y; }
+
+  resize();
+  animate();
+})();
+</script>
+
 </body></html>
